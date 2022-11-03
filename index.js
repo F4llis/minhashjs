@@ -1,3 +1,4 @@
-import { MinHash } from "./MinHash.js";
-import { ForestLSH } from "./ForestLSH.js";
-export { MinHash,ForestLSH };
+import MinHash from "./MinHash.js";
+import MinHashLSHForest from "./ForestLSH.js";
+
+export { MinHash, MinHashLSHForest };

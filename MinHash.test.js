@@ -1,5 +1,6 @@
 
 const MH = require('./MinHash.js');
+const accepted_error = 0.05
 
 test('Sha1', () => {
     expect(MH.MinHash.sha1('minhash')).toBe(442221856n);
@@ -75,62 +76,37 @@ test('Hash Values after same several update', () => {
     expect(m3.hashvalues).toStrictEqual(m4.hashvalues);
 });
 
-test('Jaccard Different', () => {
+test('Accuracy', () => {
 
-    data1 = ['minhash', 'is', 'a', 'probabilistic', 'data', 'structure', 'for',
-        'estimating', 'the', 'similarity', 'between', 'datasets']
+    const data = require('./test.accuraccy.json');
 
-    data2 = ['minhash', 'is', 'a', 'probability', 'data', 'structure', 'for',
-        'estimating', 'the', 'similarity', 'between', 'documents']
+    var errors = []
 
+    for (var i = 0; i < data.datum.length; i++){
+        data1 = data.datum[i][0]
 
-    m1 = new MH.MinHash()
-    data1.forEach((d, i) => m1.update(d));
+        data2 = data.datum[i][1]
 
-    m2 = new MH.MinHash()
-    data2.forEach((d, i) => m2.update(d));
+        m1 = new MH.MinHash()
+        data1.forEach((d, i) => m1.update(d));
 
-
-    s1 = new Set(data1)
-    s2 = new Set(data2)
-    const union = new Set([...s1, ...s2]);
-    const intersection = new Set(
-        Array.from(s1).filter(x => s2.has(x))
-    );
-
-    actual_jaccard = intersection.size / union.size
-
-    expect(m1.jaccard(m2)).toBe(actual_jaccard);
+        m2 = new MH.MinHash()
+        data2.forEach((d, i) => m2.update(d));
 
 
-});
+        s1 = new Set(data1)
+        s2 = new Set(data2)
+        const union = new Set([...s1, ...s2]);
+        const intersection = new Set(
+            Array.from(s1).filter(x => s2.has(x))
+        );
 
-test('Jaccard Equal', () => {
+        errors.push(Math.abs(m1.jaccard(m2) - (intersection.size / union.size) ))
 
-    data1 = ['minhash', 'is', 'a',  'data', 'structure', 'for',
-        'estimating', 'the', 'similarity', 'between']
+    }
 
-    data2 = ['minhash', 'is', 'a',  'data', 'structure', 'for',
-        'estimating', 'the', 'similarity', 'between']
+    mean_error = errors.reduce((a, b) => a + b, 0) / errors.length;
 
+    expect(mean_error).toBeLessThan(accepted_error);
 
-    m1 = new MH.MinHash()
-    data1.forEach((d, i) => m1.update(d));
-
-    m2 = new MH.MinHash()
-    data2.forEach((d, i) => m2.update(d));
-
-
-    s1 = new Set(data1)
-    s2 = new Set(data2)
-    const union = new Set([...s1, ...s2]);
-    const intersection = new Set(
-        Array.from(s1).filter(x => s2.has(x))
-    );
-
-    actual_jaccard = intersection.size / union.size
-
-    expect(m1.jaccard(m2)).toBe(actual_jaccard);
-
-
-});
+})
