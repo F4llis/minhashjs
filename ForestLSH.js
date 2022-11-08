@@ -110,38 +110,42 @@ class MinHashLSHForest {
 
      *_query(minhash, r, b){
 
-        if (r > this.k || r <=0 || b > this.l || b <= 0){
+         if (r > this.k || r <=0 || b > this.l || b <= 0){
             throw new Error("parameter outside range")
-        }
+         }
 
-        // Generate prefixes of concatenated hash values
-        var hps = this.hashranges.map(range => this._H(minhash.hashvalues.slice(range[0],range[0]+r)));
+         // Generate prefixes of concatenated hash values
+         var hps = this.hashranges.map(range => this._H(minhash.hashvalues.slice(range[0],range[0]+r)));
 
-        // Set the prefix length for look-ups in the sorted hash values list
-        var prefix_size = hps[0].length
+         // Set the prefix length for look-ups in the sorted hash values list
+         var prefix_size = hps[0].length
 
 
          for (var triple of this.zip(this.sorted_hashtables, hps, this.hashtables)){
 
 
 
-            var ht  = triple[0]
-            var hp  = triple[1]
-            var hashtable  = triple[2]
-
+             var ht  = triple[0]
+             var hp  = triple[1]
+             var hashtable  = triple[2]
              var compare_array_equal = function(a1,prefix_size,a2){
-                 return new BigInt64Array(a1.split(',').slice(0,prefix_size)).toString() == new BigInt64Array(a2).toString()
+                 for (let i=0; i< prefix_size; i++) {
+                     if (a1[i] !== a2[i]) return false;
+                 }
+                 return true;
              }
 
+             var search_function = function(x){
+                 for (let i=0; i < prefix_size; i++) {
+                     if (ht[x] < hp[i]) return false;
+                 }
+                 return true;
+                //return new BigInt64Array(ht[x].split(',').slice(0,prefix_size)).toString() >= new BigInt64Array(hp).toString()
 
+                //return ht[x].slice(0,prefix_size) >= hp
+             }
 
-            var search_function = function(x){
-                return new BigInt64Array(ht[x].split(',').slice(0,prefix_size)).toString() >= new BigInt64Array(hp).toString()
-
-                return ht[x].slice(0,prefix_size) >= hp
-            }
-
-            var i = this._binary_search(ht.length, search_function)
+             var i = this._binary_search(ht.length, search_function)
 
              // bugs because return undefined. it hsouild be i < ht.length -1
              if (ht[i]){
@@ -273,7 +277,7 @@ class MinHashLSHForest {
         // b'\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x04'
 
 
-        return hs //return bytes(hs.byteswap().data)
+        return new BigUint64Array(hs).buffer //return bytes(hs.byteswap().data)
     }
 
 }
