@@ -1,16 +1,4 @@
 
-class DefaultDict {
-    constructor(defaultInit) {
-        return new Proxy({}, {
-            get: (target, name) => name in target ?
-                target[name] :
-                (target[name] = typeof defaultInit === 'function' ?
-                    new defaultInit().valueOf() :
-                    defaultInit)
-        })
-    }
-}
-
 class MinHashLSHForest {
 
     /*
@@ -48,9 +36,9 @@ class MinHashLSHForest {
 
         //Maximum depth of the prefix tree
         this.k = parseInt(num_perm / l)
-        this.hashtables = Array(this.l).fill(new DefaultDict(Array))
+        this.hashtables = Array.apply(null, Array(this.l)).map(_ => new Map());
         this.hashranges = Array.apply(null, Array(this.l)).map((val, i) => [i*this.k, (i+1)*this.k]);
-        this.keys = {}
+        this.keys = new Map()
 
         // This is the sorted array implementation for the prefix trees
         this.sorted_hashtables = Array(this.l).fill([])
@@ -73,19 +61,25 @@ class MinHashLSHForest {
             throw new Error("The num_perm of MinHash out of range")
         }
 
-        if (key in this.keys){
+        if (this.keys.has(key)){
             throw new Error("The given key has already been added")
         }
 
-        this.keys[key] = this.hashranges.map(range => this._H(minhash.hashvalues.slice(range[0],range[1])));
+        this.keys.set(key, this.hashranges.map(range => this._H(minhash.hashvalues.slice(range[0],range[1]))));
 
-        this.zip(this.keys[key], this.hashtables).forEach((e) => e[1][e[0]] = key )
-
+        this.zip(this.keys.get(key), this.hashtables).forEach( function(e) {
+            if (!e[1].has(e[0])) {
+                e[1].set(e[0], [key]);
+            } else {
+                let l = e[1].get(e[0]);
+                l.push(key)
+            }
+        });
     }
 
     zip() {
         var args = [].slice.call(arguments);
-        var shortest = args.length==0 ? [] : args.reduce(function(a,b){
+        var shortest = args.length === 0 ? [] : args.reduce(function(a,b){
             return a.length<b.length ? a : b
         });
 
@@ -101,8 +95,14 @@ class MinHashLSHForest {
          */
 
         for (const [i, hashtable] of this.hashtables.entries()) {
-            this.sorted_hashtables[i] = Object.keys(hashtable);
-            this.sorted_hashtables[i].sort()
+            this.sorted_hashtables[i] = Array.from(hashtable.keys(), (v) => new Uint8Array(this._H(v)));
+            this.sorted_hashtables[i].sort(function (a, b){
+                for (let x=0; x<a.length; x++){
+                    if (a[x] < b[x]) return -1;
+                    else if (a[x] > b[x]) return 1;
+                }
+                return 0;
+            });
         }
 
 
@@ -110,38 +110,36 @@ class MinHashLSHForest {
 
      *_query(minhash, r, b){
 
-        if (r > this.k || r <=0 || b > this.l || b <= 0){
+         if (r > this.k || r <=0 || b > this.l || b <= 0){
             throw new Error("parameter outside range")
-        }
+         }
 
-        // Generate prefixes of concatenated hash values
-        var hps = this.hashranges.map(range => this._H(minhash.hashvalues.slice(range[0],range[0]+r)));
+         // Generate prefixes of concatenated hash values
+         var hps = this.hashranges.map(range => new Uint8Array(this._H(minhash.hashvalues.slice(range[0],range[0]+r))));
 
-        // Set the prefix length for look-ups in the sorted hash values list
-        var prefix_size = hps[0].length
+         // Set the prefix length for look-ups in the sorted hash values list
+         var prefix_size = hps[0].length
 
 
          for (var triple of this.zip(this.sorted_hashtables, hps, this.hashtables)){
-
-
-
-            var ht  = triple[0]
-            var hp  = triple[1]
-            var hashtable  = triple[2]
-
+             var ht  = triple[0]
+             var hp  = triple[1]
+             var hashtable  = triple[2]
              var compare_array_equal = function(a1,prefix_size,a2){
-                 return new BigInt64Array(a1.split(',').slice(0,prefix_size)).toString() == new BigInt64Array(a2).toString()
+                 for (let i=0; i < prefix_size; i++) {
+                     if (a1[i] !== a2[i]) return false;
+                 }
+                 return true;
              }
 
+             var search_function = function(x){
+                 for (let i=0; i < prefix_size; i++) {
+                     if (ht[x][i] < hp[i]) return false;
+                 }
+                 return true;
+             }
 
-
-            var search_function = function(x){
-                return new BigInt64Array(ht[x].split(',').slice(0,prefix_size)).toString() >= new BigInt64Array(hp).toString()
-
-                return ht[x].slice(0,prefix_size) >= hp
-            }
-
-            var i = this._binary_search(ht.length, search_function)
+             var i = this._binary_search(ht.length, search_function)
 
              // bugs because return undefined. it hsouild be i < ht.length -1
              if (ht[i]){
@@ -155,8 +153,10 @@ class MinHashLSHForest {
                      while (j < ht.length && compare_array_equal(ht[j],prefix_size,hp )) {
 
 
-                        yield hashtable[ht[j]]
-
+                        //yield hashtable[ht[j]]
+                        for (let key of hashtable.get(ht[j].buffer)){
+                            yield key;
+                        }
 
                         /* for (var key of hashtable[ht[j]]){
                                  yield key
@@ -273,7 +273,7 @@ class MinHashLSHForest {
         // b'\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x04'
 
 
-        return hs //return bytes(hs.byteswap().data)
+        return new BigUint64Array(hs).buffer //return bytes(hs.byteswap().data)
     }
 
 }
