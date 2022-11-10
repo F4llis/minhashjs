@@ -158,13 +158,6 @@ class MinHashLSHForest {
                             yield key;
                         }
 
-                        /* for (var key of hashtable[ht[j]]){
-                                 yield key
-                             }
-
-
-                         */
-
 
                          j += 1
                      }

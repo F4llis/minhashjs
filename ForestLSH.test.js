@@ -42,8 +42,8 @@ test('Init Forest', () => {
     forest.index()
 
     // Check for membership using the key
-    expect("m2" in forest.keys).toBeTruthy();
-    expect("m3" in forest.keys).toBeTruthy();
+    expect(forest.keys.has("m2")).toBeTruthy();
+    expect(forest.keys.has("m3")).toBeTruthy();
 
 
     // Using m1 as the query, retrieve top 2 keys that have the higest Jaccard
