@@ -97,7 +97,7 @@ test('Query item already inside forest', () => {
 
 
 
-    var r  = forest.query(mx, 2)
+    var r  = forest.query(mx, 10)
 
     expect(r.includes('m10')).toBeTruthy();
 
