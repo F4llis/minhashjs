@@ -1,12 +1,22 @@
 
 const F = require('./ForestLSH.js');
 const MH = require("./MinHash");
-const data = require("./test.accuraccy.json");
 
 function getMultipleRandom(arr, num) {
     const shuffled = [...arr].sort(() => 0.5 - Math.random());
 
     return shuffled.slice(0, num);
+}
+
+
+function jaccard(a, b){
+    const s1 = new Set(a)
+    const s2 = new Set(b)
+    const union = new Set([...s1, ...s2]);
+    const intersection = new Set(
+        Array.from(s1).filter(x => s2.has(x))
+    );
+    return intersection.size / union.size
 }
 
 
@@ -55,7 +65,14 @@ test('Build Forest', () => {
 
 
     // Using m1 as the query, retrieve top 2 keys that have the higest Jaccard
-    forest.query(m1, 1)
+    let r = forest.query(m1, 1)[0]
+    let j_m2 = jaccard(data1, data2)
+    let j_m3 = jaccard(data1, data3)
+    if (j_m2 < j_m3){
+        expect(r).toBe("m3");
+    } else {
+        expect(r).toBe("m2");
+    }
 
 });
 
@@ -68,7 +85,7 @@ test('Query item already inside forest', () => {
     var forest = new F.MinHashLSHForest(num_perm=128)
 
     cpt=0
-    for (var i = 0; i < data.datum.length; i++){
+    for (var i = 0; i < 11; i++){
 
         data1 = data.datum[i][0]
         data2 = data.datum[i][1]
@@ -151,11 +168,17 @@ test('Query accuracy of custom query', () => {
     var daty = first_half.concat(second_half)
 
     daty.forEach((d, i) => mx.update(d));
+    let jac_first = jaccard(daty, first[0])
+    let jac_second = jaccard(daty, second[0])
+    // console.log("jac_first = "+jac_first);
+    // console.log("jac_second = "+jac_first);
 
     var r = forest.query(mx, 10)
 
-    expect(r.includes(keys[0])).toBeTruthy();
-    expect(r.includes(keys[1])).toBeTruthy();
-
-
+    for (let k of r){
+        let jac_k = jaccard(daty, repo[k][0]);
+        // console.log("jac_["+k+"] = "+jac_k);
+        expect(jac_k).toBeGreaterThanOrEqual(jac_first);
+        expect(jac_k).toBeGreaterThanOrEqual(jac_second);
+    }
 })
