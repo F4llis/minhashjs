@@ -135,6 +135,7 @@ class MinHashLSHForest {
              var search_function = function(x){
                  for (let i=0; i < prefix_size; i++) {
                      if (ht[x][i] < hp[i]) return false;
+                     else if (ht[x][i] > hp[i]) return true;
                  }
                  return true;
              }
