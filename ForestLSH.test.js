@@ -81,11 +81,10 @@ test('Query item already inside forest', () => {
     const data = require('./test.accuraccy.json');
     const repo = {}
 
-
     var forest = new F.MinHashLSHForest(num_perm=128)
 
     cpt=0
-    for (var i = 0; i < 11; i++){
+    for (var i = 0; i < data.datum.length; i++){
 
         data1 = data.datum[i][0]
         data2 = data.datum[i][1]
@@ -112,10 +111,7 @@ test('Query item already inside forest', () => {
     var daty =  repo["m10"][0]
     daty.forEach((d, i) => mx.update(d));
 
-
-
     var r  = forest.query(mx, 10)
-
     expect(r.includes('m10')).toBeTruthy();
 
 })
