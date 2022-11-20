@@ -59,7 +59,7 @@ class MinHash {
 
 
      */
-    constructor( {num_perm= 128, permutations=null,  hashfunc=MinHash.sha1, hashvalues=null, }= {}){
+    constructor( {num_perm= 128,  hashfunc=MinHash.sha1, hashvalues=null, }= {}){
 
         if (hashvalues !== null ) {
             num_perm = hashvalues.length
@@ -85,34 +85,6 @@ class MinHash {
 
     _parse_hashvalues(hashvalues){
         return new BigUint64Array(hashvalues)
-    }
-
-    update_default(b){
-        /*  Update this MinHash with a new value.
-
-       The value will be hashed using the hash function specified by
-       the hashfunc argument in the constructor.
-
-       Args:
-           b: The value to be hashed using the hash function specified.
-
-        */
-
-        var hv = this.hashfunc(b)
-
-        var a = this.permutations[0]
-        var b = this.permutations[1]
-
-        var ah = a.map(x => x * hv);
-        var ahb = ah.map((e, index) => e + b[index])
-        var ahbm = ahb.map(x => x % MinHash._mersenne_prime);
-
-        var phv = ahbm.map(x => x & MinHash._max_hash);
-
-        const bigIntMin = (...args) => args.reduce((m, e) => e < m ? e : m);
-
-        this.hashvalues = phv.map((e, index) => bigIntMin(e,this.hashvalues[index]))
-
     }
 
     update(b){

@@ -1,7 +1,7 @@
 {
   "name": "minhashjs",
   "version": "1.0.0",
-  "description": "Datasketch MinHash and LSH implementation in JavaScript",
+  "description": "MinHash and LSH in JavaScript (Datasketch implementation)",
   "main": "index.js",
   "scripts": {
     "test": "jest --silent=false",
@@ -26,7 +26,6 @@
     "jest": "^29.2.2"
   },
   "dependencies": {
-    "browserify": "^17.0.0",
-    "crypto-js": "^4.1.1"
+    "readme-md-generator": "^1.0.0"
   }
 }

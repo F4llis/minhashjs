@@ -257,17 +257,7 @@ class MinHashLSHForest {
 
     _H(hs){
 
-        // IN       hs > array of big 32 int
-        // Bytes swap wach element
-        // take the buffer
-        // OUT     Bytes the buffer string
-
-        // [3 4]
-        // [216172782113783808 288230376151711744]
-        // b'\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x04'
-
-
-        return new BigUint64Array(hs).buffer //return bytes(hs.byteswap().data)
+        return new BigUint64Array(hs).buffer
     }
 
 }

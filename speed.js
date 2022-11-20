@@ -10,28 +10,6 @@ console.time("Empty MinHash with 256 permutations 10000 Times")
 for (var p = 0; p < 10000; p++){ new MH.MinHash(num_perm = 256) }
 console.timeEnd("Empty MinHash with 256 permutations 10000 Times")
 
-
-console.time("Update DEFAULT 10000 Times")
-data1 = ['minhash', 'is', 'a',  'data', 'structure', 'for',
-    'estimating', 'the', 'similarity', 'between']
-for (var p = 0; p < 10000; p++){
-    var m1 = new MH.MinHash(num_perm = 128)
-    data1.forEach((d, i) => m1.update_default(d));
-}
-console.timeEnd("Update DEFAULT 10000 Times")
-
-console.time("Update CUSTOM 10000 Times")
-data1 = ['minhash', 'is', 'a',  'data', 'structure', 'for',
-    'estimating', 'the', 'similarity', 'between']
-for (var p = 0; p < 10000; p++){
-    var m1 = new MH.MinHash(num_perm = 128)
-    data1.forEach((d, i) => m1.update(d));
-}
-console.timeEnd("Update CUSTOM 10000 Times")
-
-
-
-
 console.time("Sample text with 128 permutations 10000 Times")
 data1 = ['minhash', 'is', 'a',  'data', 'structure', 'for',
     'estimating', 'the', 'similarity', 'between']
