@@ -17,7 +17,7 @@
 ## Install
 
 ```sh
-npm install
+npm i minhashjs
 ```
 
 ## MinHash Usage
